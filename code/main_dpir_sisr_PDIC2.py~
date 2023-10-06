@@ -1,0 +1,293 @@
+import os.path
+import glob
+import cv2
+import logging
+import time
+
+import numpy as np
+from datetime import datetime
+from collections import OrderedDict
+import hdf5storage
+
+import torch
+
+from utils import utils_deblur
+from utils import utils_logger
+from utils import utils_model
+from utils import utils_pnp as pnp
+from utils import utils_sisr as sr
+from utils import utils_image as util
+import scipy.io as sio
+
+#import matplotlib.pyplot as plt
+from PIL import Image
+import matlab.engine
+eng = matlab.engine.start_matlab()  
+
+###############################
+#
+# Tasks: Upgrade activation function to tanh.
+#
+###############################
+
+
+
+"""
+Spyder (Python 3.7)
+PyTorch 1.6.0
+Windows 10 or Linux
+Kai Zhang (cskaizhang@gmail.com)
+github: https://github.com/cszn/DPIR
+        https://github.com/cszn/IRCNN
+        https://github.com/cszn/KAIR
+@article{zhang2020plug,
+  title={Plug-and-Play Image Restoration with Deep Denoiser Prior},
+  author={Zhang, Kai and Li, Yawei and Zuo, Wangmeng and Zhang, Lei and Van Gool, Luc and Timofte, Radu},
+  journal={arXiv preprint},
+  year={2020}
+}
+% If you have any question, please feel free to contact with me.
+% Kai Zhang (e-mail: cskaizhang@gmail.com; homepage: https://cszn.github.io/)
+by Kai Zhang (01/August/2020)
+
+# --------------------------------------------
+|--model_zoo               # model_zoo
+   |--drunet_gray          # model_name, for color images
+   |--drunet_color
+|--testset                 # testsets
+|--results                 # results
+# --------------------------------------------
+"""
+
+def KK(im):
+    [m, n] = im.shape[:2]
+    #my2 = np.floor(m/2); my = 2*my2+1
+    #mx2 = np.floor(n/2); mx = 2*mx2+1
+    my2 = (m-1)/2; my = 2*my2+1
+    mx2 = (n-1)/2; mx = 2*mx2+1
+
+    ky = np.arange(-mx2,mx2+1)/(2*mx2 + 1)
+    kx = np.arange(-my2,my2+1)/(2*my2 + 1)
+
+    kx = np.repeat(kx[...,None], 2*mx2+1, axis=1)
+    ky = np.repeat(ky[None,...], 2*my2+1, axis=0)
+
+    k = np.sqrt(kx*kx + ky*ky);
+
+    ## Shift them to the regular Fourier pattern and add the 2*pi factor
+    kx = 2*np.pi*np.fft.ifftshift(kx)
+    ky = 2*np.pi*np.fft.ifftshift(ky)
+    k = 2*np.pi*np.fft.ifftshift(k)
+
+    return kx
+    
+
+def show(end, pos, x):
+    im = Image.fromarray(np.squeeze(np.array(x.cpu())))
+    image_mat = matlab.single(list(im.getdata()))
+    image_mat.reshape((im.size[0], im.size[1]))
+    eng.subplot(pos)
+    eng.imagesc(image_mat)
+    eng.axis('square', nargout=0)
+    eng.colorbar()
+    print('{} {}'.format(x.max().cpu(), x.min().cpu()))
+            
+
+def main():
+
+    """
+    # ----------------------------------------------------------------------------------
+    # In real applications, you should set proper 
+    # - "noise_level_img": from [3, 25], set 3 for clean image, try 15 for very noisy LR images
+    # - "k" (or "kernel_width"): blur kernel is very important!!!  kernel_width from [0.6, 3.0]
+    # to get the best performance.
+    # ----------------------------------------------------------------------------------
+    """
+    ##############################################################################
+
+    testset_name = 'PDIC'                # set test set,  'set5' | 'srbsd68'
+    x8 = True                            # default: False, x8 to boost performance
+    model_name = 'drunet_gray'           # 'ircnn_color'         # set denoiser, | 'drunet_color' | 'ircnn_gray' | 'drunet_gray' | 'ircnn_color'
+    sf = 1                               # set scale factor, 1, 2, 3, 4
+    iter_num = 15                        # set number of iterations, default: 24 for SISR
+    noise_level_img = 3                  # set noise level of image, from [3, 25], set 3 for clean image
+    noise_level_model = noise_level_img/255.  # noise level of model
+    
+    """
+    # set your own kernel width !!!!!!!!!!
+    """
+    kernel_width = 1.0
+
+    ##############################################################################
+    task_current = 'sr'                  # 'sr' for super-resolution
+    n_channels = 1 if 'gray' in model_name or 'tanh' in model_name else 3  # fixed
+    act_mode = 'H' if 'tanh' in model_name else 'R'
+    model_zoo = 'model_zoo'              # fixed
+    testsets = 'testsets'                # fixed
+    results = 'results'                  # fixed
+    result_name = testset_name + '_realapplications_' + task_current + '_' + model_name
+    model_path = os.path.join(model_zoo, model_name+'.pth')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.empty_cache()
+
+    # ----------------------------------------
+    # L_path, E_path, H_path
+    # ----------------------------------------
+    L_path = os.path.join(testsets, testset_name) # L_path, for Low-quality images
+    E_path = os.path.join(results, result_name)   # E_path, for Estimated images
+    util.mkdir(E_path)
+
+    logger_name = result_name
+    utils_logger.logger_info(logger_name, log_path=os.path.join(E_path, logger_name+'.log'))
+    logger = logging.getLogger(logger_name)
+
+    # ----------------------------------------
+    # load model
+    # ----------------------------------------
+    if 'drunet' in model_name:
+        from models.network_unet import UNetRes as net
+        model = net(in_nc=n_channels+1, out_nc=n_channels, nc=[64, 128, 256, 512], nb=4, act_mode=act_mode, downsample_mode="strideconv", upsample_mode="convtranspose")
+        model.load_state_dict(torch.load(model_path), strict=True)
+        model.eval()
+        for _, v in model.named_parameters():
+            v.requires_grad = False
+        model = model.to(device)
+    elif 'ircnn' in model_name:
+        from models.network_dncnn import IRCNN as net
+        model = net(in_nc=n_channels, out_nc=n_channels, nc=64)
+        model25 = torch.load(model_path)
+        former_idx = 0
+
+    logger.info('model_name:{}, image sigma:{:.3f}, model sigma:{:.3f}'.format(model_name, noise_level_img, noise_level_model))
+    logger.info('Model path: {:s}'.format(model_path))
+    logger.info(L_path)
+    L_paths = util.get_image_paths(L_path)
+
+    for idx, img in enumerate(L_paths):
+
+        # --------------------------------
+        # (1) get img_L
+        # --------------------------------
+        logger.info('Model path: {:s} Image: {:s}'.format(model_path, img))
+        img_name, ext = os.path.splitext(os.path.basename(img))
+        img_L = np.float32(sio.loadmat(img)['Delta'])
+        if np.ndim(img_L)==2:
+            img_L = img_L[..., None]
+
+        # 1/sigma2 = 1/sigma^2 is the SNR
+        I = np.float32(sio.loadmat(img)['I'])
+        gamma = 0.176
+        sigma2 = 1/gamma/np.mean(I);
+        noise_level_model = np.sqrt(sigma2)   # noise level of model
+        noise_level_img = noise_level_model*255 # set noise level of image, from [3, 25], set 3 for clean image
+
+        # --------------------------------
+        # (2) get rhos and sigmas: weighting between the fidelity and prior terms
+        # --------------------------------
+        #sigma = max(0.255/255., noise_level_model)
+        sigma = np.sqrt(sigma2)
+        
+        modelSigma1 = 49                     # set sigma_1, default: 49
+        modelSigma2 = max(sf, noise_level_model*255.)
+
+        modelSigmaS = np.logspace(np.log10(modelSigma1), np.log10(modelSigma2), iter_num).astype(np.float32)
+        sigmas = (modelSigmaS)/255.
+
+        # 0.23*(sigma**2)/(x**2) --> 0.23*(sigm**2)*lambda
+        rhos = list(map(lambda x: 0.23*(sigma**2)/(x**2), sigmas))
+
+        rhos, sigmas = torch.tensor(rhos).to(device), torch.tensor(sigmas).to(device)
+
+        # Reduce rho --> larger phase values and more prounced artefacts contribution
+        #rhos = rhos/100
+        
+        # --------------------------------
+        # (3) initialize x, and pre-calculation
+        # --------------------------------
+        # FT{im}: It requires a positive image to perform well
+        x = img_L
+        x = util.single2tensor4(x).to(device)
+        Fx = -torch.fft.fftn(x, dim=(-2, -1))
+
+        # kx
+        Kx = KK(img_L)
+        if np.ndim(Kx)==2:
+            Kx = Kx[..., None]
+        Kx = util.single2tensor4(Kx).to(device)
+
+        # initialize x
+        x = np.zeros(img_L.shape)
+        x = util.single2tensor4(x).to(device)
+
+        # --------------------------------
+        # (4) main iterations
+        # --------------------------------
+        for i in range(iter_num):
+
+            print('Iter: {} / {} {} {}'.format(i, iter_num, rhos[i], sigmas[i]))
+
+            # --------------------------------
+            # step 1, FFT
+            # --------------------------------
+            tau = rhos[i].float().repeat(1, 1, 1, 1)
+
+            FB = -1j*Kx*Fx + tau*torch.fft.fftn(x, dim=(-2, -1))
+            x = FB.div(Kx*Kx + tau)
+            x = torch.real(torch.fft.ifftn(x, dim=(-2, -1)))
+            # Make x non-negative
+            #x = x - x.mean() + 2
+            
+            show(eng, '121', x)
+            
+            if 'ircnn' in model_name:
+                current_idx = np.int(np.ceil(sigmas[i].cpu().numpy()*255./2.)-1)
+    
+                if current_idx != former_idx:
+                    model.load_state_dict(model25[str(current_idx)], strict=True)
+                    model.eval()
+                    for _, v in model.named_parameters():
+                        v.requires_grad = False
+                    model = model.to(device)
+                former_idx = current_idx
+
+            # --------------------------------
+            # step 2, denoiser
+            # --------------------------------
+            mask = x.ge(0)
+            xplus = x.masked_fill(~mask, 0)
+            xneg = -x.masked_fill(mask, 0)
+
+            if x8:
+                xplus = util.augment_img_tensor4(xplus, i % 8)
+                xneg = util.augment_img_tensor4(xneg, i % 8)
+
+            # sigmas is 1/sqrt(mu) in Kai and 1/sqrt(lambda) in mine, ranging from (49 to 3)/255, in Kai paper 
+            if 'drunet' in model_name:
+                xplus = torch.cat((xplus, sigmas[i].repeat(1, 1, x.shape[2], x.shape[3])), dim=1)
+                xplus = utils_model.test_mode(model, xplus, mode=2, refield=64, min_size=256, modulo=16)
+
+                xneg = torch.cat((xneg, sigmas[i].repeat(1, 1, x.shape[2], x.shape[3])), dim=1)
+                xneg = utils_model.test_mode(model, xneg, mode=2, refield=64, min_size=256, modulo=16)
+                
+            if x8:
+                if i % 8 == 3 or i % 8 == 5:
+                    xplus = util.augment_img_tensor4(xplus, 8 - i % 8)
+                    xneg = util.augment_img_tensor4(xneg, 8 - i % 8)
+                else:
+                    xplus = util.augment_img_tensor4(xplus, i % 8)
+                    xneg = util.augment_img_tensor4(xneg, i % 8)
+
+
+            x = xplus.masked_fill(~mask, 0) - xneg.masked_fill(mask, 0)
+            
+            show(eng, '122', x)
+            
+        # --------------------------------
+        # (3) img_E
+        # --------------------------------
+        img_E = util.tensor2uint(x)
+        util.imsave(img_E, os.path.join(E_path, img_name+'_x'+str(sf)+'_'+model_name+'.png'))
+
+if __name__ == '__main__':
+
+    main()
