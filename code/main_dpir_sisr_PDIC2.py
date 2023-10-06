@@ -32,13 +32,6 @@ eng.addpath(r"C:\Users\aleks\Dropbox (Hunter College)\DPIR\Matlab");
 
 import scipy.io
 
-#eng.addpath("/home/minxu/research/microscope/code/");
-#eng.addpath("/home/minxu/research/microscope/code/");
-#eng.addpath("/home/minxu/work/papers/Current/NewMicroscopy/");
-#eng.addpath("/home/minxu/research/ML/GSVD");
-#eng.addpath("~/research/ML/sr-metric");
-#eng.addpath("~/research/ML/sr-metric/external/matlabPyrTools");
-#eng.addpath("~/research/ML/sr-metric/external/randomforest-matlab/RF_Reg_C");
 
 
 ###############################
@@ -467,13 +460,7 @@ def main():
 
                 delta, deltap, deltapp = (x-xp).norm()/x.norm(), delta, deltap
                 print('==> delta: {} {} {}'.format(delta, deltap, deltapp))
-                #mariia saves data here
-
-                #folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\\'
-                #file_name = 'data_dru.mat'
-                # Save the data as a matrix to the specified folder
-                #sio.savemat(folder_path + file_name, {'matrix_data': data})
-                #scipy.io.savemat(folder_path + file_name, {'dru': np.array(x), 'iter': np.array(i)})
+                
                 file_name = f'data_dru_iteration_{i}.mat'
                 folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\\'
                 sio.savemat(folder_path + file_name, {'dru': x.squeeze().cpu().detach().numpy(), 'iter': i})
