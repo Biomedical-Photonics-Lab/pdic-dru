@@ -198,8 +198,8 @@ def main():
     n_channels = 1 if 'gray' in model_name or 'tanh' in model_name else 3  # fixed
     act_mode = 'H' if 'tanh' in model_name else 'R'
     model_zoo = 'model_zoo'              # fixed
-    testsets = 'onefile'                # fixed
-    results = 'onefile2'                  # fixed
+    testsets = 'testsets'                # fixed
+    results = 'results '                  # fixed
     result_name = testset_name + '_realapplications_' + task_current + '_' + model_name
     model_path = os.path.join(model_zoo, model_name+'.pth')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -266,12 +266,10 @@ def main():
         I = np.float32(sio.loadmat(img)['I'])
         gamma = 0.176                         # For the camera quantum efficiency
         sigma2 = (opts.pixelsz/opts.shear)**2*0.5/gamma/np.mean(I) # variance of noise in phi_x from intensity measurement
-        #sigma = np.sqrt(0.5/gamma/np.mean(I)) # stdev of noise in u. In X60 objective and Blackfly polarization camera, this yields the same answer as np.sqrt(17*sigma2)
-
+        
         # --------------------------------
         # (2) get rhos and sigmas: weighting between the fidelity and prior terms
         # --------------------------------
-        # modelSigma1 = 49/255, alpha=1, beta=mu/100, gamma1=1.618, mu=1/(0.23*sigma2). sigma2=0.5/gamma/np.mean(I) is best for tissue.
         mu = 1/sigma2
         
         ## TV-part: alpha varies between 1 and 20.
@@ -404,12 +402,7 @@ def main():
                     tau[0,0,0,0] = 0
                     x, w, lam = ADM2TVL2_step(x, w, lam, F, Kx, Ky, mu, tau, alpha=alpha, beta=beta, gamma=gamma1, eps=1e-6)
 
-                #mariia saves data here #delet this part
-
-                file_name = f'data_tv_iteration_{i}.mat'
-                folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\\'
-                sio.savemat(folder_path + file_name, {'tv': x.squeeze().cpu().detach().numpy(), 'iter': i})
-
+        
                 # x: [0, 0, x direction, y direction]
                 pri_residue = (x.diff(axis=-1, append=x[...,0][...,None]) - w).norm()
                 ds = w - wp
@@ -434,10 +427,7 @@ def main():
                     print('    Difference: {}'.format((x-xp).norm()/x.norm()))
 
                 show(eng, '121', x)
-                file_name = f'data_tv_iteration_{i}.mat'
-                folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\tv\\'
-                sio.savemat(folder_path + file_name, {'tv': x.squeeze().cpu().detach().numpy(), 'iter': i})
-                #savemat(eng, 100*i + counter, x)
+                
                 
                 # --------------------------------
                 # step 2, denoiser
@@ -461,9 +451,6 @@ def main():
                 delta, deltap, deltapp = (x-xp).norm()/x.norm(), delta, deltap
                 print('==> delta: {} {} {}'.format(delta, deltap, deltapp))
                 
-                file_name = f'data_dru_iteration_{i}.mat'
-                folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\\'
-                sio.savemat(folder_path + file_name, {'dru': x.squeeze().cpu().detach().numpy(), 'iter': i})
                 
                 if 1:
                     if delta > eta*deltap and deltap != 1.0:
