@@ -28,7 +28,7 @@ from adm2tvl2 import ADM2TVL2_step, structtype, cNorm
 from PIL import Image
 import matlab.engine
 eng = matlab.engine.start_matlab()  
-eng.addpath(r"C:\Users\aleks\Dropbox (Hunter College)\DPIR\Matlab");
+eng.addpath(r"C:\Users\aleks\Dropbox (Hunter College)\DPIR\Matlab"); # add path to the matlab folder on git
 
 import scipy.io
 
@@ -404,7 +404,7 @@ def main():
                     tau[0,0,0,0] = 0
                     x, w, lam = ADM2TVL2_step(x, w, lam, F, Kx, Ky, mu, tau, alpha=alpha, beta=beta, gamma=gamma1, eps=1e-6)
 
-                #mariia saves data here
+                #mariia saves data here #delet this part
 
                 file_name = f'data_tv_iteration_{i}.mat'
                 folder_path = r'C:\Users\aleks\Dropbox (Hunter College)\DPIR\onefile2\data\\'
