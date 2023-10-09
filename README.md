@@ -4,10 +4,19 @@
 Single-shot high-performance quantitative phase imaging with a Physics-inspired plug-and-play denoiser for polarization differential interference contrast (PDIC) microscopy. The quantitative phase is recovered by the alternating direction method of multipliers (ADMM), balancing total variance regularization and a pre-trained Dense Residual U-net (DRUNet) denoiser. The custom DRUNet uses the Tanh activation function to guarantee the symmetry requirement for phase retrieval.
 
 # Results
+
+![Alt text](results/simens_all.tif "Fig. 1. Phase retrieval of simulated Siemens star. (a) Ground truth, and the reconstructed phase using (b) the Fourier Transform solution, (c) the total variance regularized solution, and (d) the TV+DRUNet solution.")
+
+### Fig. 1. Phase retrieval of simulated Siemens star. (a) Ground truth, and the reconstructed phase using (b) the Fourier Transform solution, (c) the total variance regularized solution, and (d) the TV+DRUNet solution.
+
 ![Alt text](results/40x-cancer-tissue.jpg "Fig. 2. Prostate cancer tissue (adenocarcinoma, stage III) measured with 40x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Yellow arrows point to representative regions.")
+
+### Fig. 2. Prostate cancer tissue (adenocarcinoma, stage III) measured with 40x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Yellow arrows point to representative regions.
+
 
 ![Alt text](results/60x-cancer-tissue.png "Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Additionally, the region marked by the yellow rectangle in the H&E-stained histopathological image was enlarged in (e)-(h). Yellow arrows point to representative regions.")
 
+### Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Additionally, the region marked by the yellow rectangle in the H&E-stained histopathological image was enlarged in (e)-(h). Yellow arrows point to representative regions.
 
 # Citation
 {
