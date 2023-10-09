@@ -28,7 +28,7 @@ from adm2tvl2 import ADM2TVL2_step, structtype, cNorm
 from PIL import Image
 import matlab.engine
 eng = matlab.engine.start_matlab()  
-eng.addpath(r"C:\Users\aleks\Dropbox (Hunter College)\DPIR\Matlab"); # add path to the matlab folder on git
+eng.addpath(r"code/Matlab"); # add path to the Matlab folder on git
 
 import scipy.io
 
