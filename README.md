@@ -19,15 +19,11 @@ Fig. 2. Prostate cancer tissue (adenocarcinoma, stage III) measured with 40x obj
 Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Additionally, the region marked by the yellow rectangle in the H&E-stained histopathological image was enlarged in (e)-(h). Yellow arrows point to representative regions.
 
 # Citation
-@article {Strassberg2021.06.06.447109,
-	author = {Mark Strassberg and Yana Shevtsova and Domenick Kamel and Kai Wagoner-oshima and Hualin Zhong and Min Xu},
-	title = {Single snapshot quantitative phase imaging with polarization differential interference contrast},
-	elocation-id = {2021.06.06.447109},
-	year = {2021},
-	doi = {10.1101/2021.06.06.447109},
-	publisher = {Cold Spring Harbor Laboratory},
-	abstract = {We present quantitative phase imaging with polarization differential interference contrast (PDIC) realized on a slightly modified differential interference contrast (DIC) microscope. By recording the Stokes vector rather than the intensity of the differential interference pattern with a polarization camera, PDIC enables single snapshot quantitative phase imaging with high spatial resolution in real-time at speed limited by the camera frame rate alone. The approach applies to either absorptive or transparent samples and can integrate simply with fluorescence imaging for co-registered simultaneous measurements. Furthermore, an algorithm with total variation regularization is introduced to solve the quantitative phase map from partial derivatives. After quantifying the accuracy of PDIC phase imaging with numerical simulations and phantom measurements, we demonstrate the biomedical applications by imaging the quantitative phase of both stained and unstained histological tissue sections and visualizing the fission yeast Schizosaccharomyces pombe{\textquoteright}s cytokinesis.Competing Interest StatementThe authors have declared no competing interest.},
-	URL = {https://www.biorxiv.org/content/early/2021/06/06/2021.06.06.447109},
-	eprint = {https://www.biorxiv.org/content/early/2021/06/06/2021.06.06.447109.full.pdf},
-	journal = {bioRxiv}
+@article{
+	Strassberg_Shevtsova_Kamel_Wagoner-oshima_Zhong_Xu_2021, 
+ 	DOI={10.1101/2021.06.06.447109}, 
+  	journal={Single snapshot quantitative phase imaging with polarization differential interference contrast}, 
+   	author={Strassberg, Mark and Shevtsova, Yana and Kamel, Domenick and Wagoner-oshima, Kai and Zhong, Hualin and Xu, Min}, 
+    	year={2021}} 	
+     	journal = {bioRxiv}
 }
