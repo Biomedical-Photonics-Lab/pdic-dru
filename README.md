@@ -20,8 +20,6 @@ Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) 
 
 # Citation
 
-[List of Authors and Contributors](CREDITS.txt)
-
 @article{
 	Strassberg_Shevtsova_Kamel_Wagoner-oshima_Zhong_Xu_2021, 
  	DOI={10.1101/2021.06.06.447109}, 
@@ -29,4 +27,11 @@ Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) 
    	author={Strassberg, Mark and Shevtsova, Yana and Kamel, Domenick and Wagoner-oshima, Kai and Zhong, Hualin and Xu, Min}, 
     	year={2021}} 	
      	journal = {bioRxiv}
+}
+
+@article{zhang2020plug,
+title={Plug-and-Play Image Restoration with Deep Denoiser Prior},
+author={Zhang, Kai and Li, Yawei and Zuo, Wangmeng and Zhang, Lei and Van Gool, Luc and Timofte, Radu},
+journal={arXiv preprint},
+year={2020}
 }
