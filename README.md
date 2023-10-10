@@ -19,6 +19,9 @@ Fig. 2. Prostate cancer tissue (adenocarcinoma, stage III) measured with 40x obj
 Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) H&E-stained histopathological image and reconstructed phase images using (b) Fourier transform, (c) total variance regularized, and (d) total variance plus DRUNet denoiser methods. Additionally, the region marked by the yellow rectangle in the H&E-stained histopathological image was enlarged in (e)-(h). Yellow arrows point to representative regions.
 
 # Citation
+
+[List of Authors and Contributors](CREDITS.txt)
+
 @article{
 	Strassberg_Shevtsova_Kamel_Wagoner-oshima_Zhong_Xu_2021, 
  	DOI={10.1101/2021.06.06.447109}, 
