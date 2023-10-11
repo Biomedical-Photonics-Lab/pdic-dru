@@ -22,6 +22,8 @@ Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) 
 
 # Citation
 
+This repository relies on methodologies developed by Zhang Kai in the [DPIR repository](https://github.com/cszn/DPIR). We acknowledge the utility of the DRUNet (Deep Recursive Unfolding Network) and associated utility functions, collectively known as "utils," in the advancement of our image restoration research.
+
 @article{
 	Strassberg_Shevtsova_Kamel_Wagoner-oshima_Zhong_Xu_2021, 
  	DOI={10.1101/2021.06.06.447109}, 
