@@ -24,20 +24,14 @@ Fig. 3. Prostate cancer adjacent normal tissue measured with 60x objective. (a) 
 
 This repository relies on methodologies developed by Zhang Kai in the [DPIR repository](https://github.com/cszn/DPIR). We acknowledge the utility of the DRUNet (Deep Recursive Unfolding Network) and associated utility functions, collectively known as "utils," in the advancement of our image restoration research.
 
-https://github.com/MariiaAleksandrovych/pdic-dru/blob/d50a34af3d79dbe567f06626a8bb4d8b04ff4ac5/citations/zang2021pnp.bib
-
-@article{
-	Strassberg_Shevtsova_Kamel_Wagoner-oshima_Zhong_Xu_2021, 
- 	DOI={10.1101/2021.06.06.447109}, 
-  	journal={Single snapshot quantitative phase imaging with polarization differential interference contrast}, 
-   	author={Strassberg, Mark and Shevtsova, Yana and Kamel, Domenick and Wagoner-oshima, Kai and Zhong, Hualin and Xu, Min}, 
-    	year={2021}} 	
-     	journal = {bioRxiv}
+~~~
+@article{zhang2021plug,
+  title={Plug-and-Play Image Restoration with Deep Denoiser Prior},
+  author={Zhang, Kai and Li, Yawei and Zuo, Wangmeng and Zhang, Lei and Van Gool, Luc and Timofte, Radu},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume={44},
+  number={10},
+  pages={6360-6376},
+  year={2021}
 }
-
-@article{zhang2020plug,
-title={Plug-and-Play Image Restoration with Deep Denoiser Prior},
-author={Zhang, Kai and Li, Yawei and Zuo, Wangmeng and Zhang, Lei and Van Gool, Luc and Timofte, Radu},
-journal={arXiv preprint},
-year={2020}
-}
+~~~
